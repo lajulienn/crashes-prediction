@@ -1,0 +1,15 @@
+from catboost import CatBoostClassifier
+from pandas import DataFrame
+
+from . import config
+
+class CrashPredictor:
+    def __init__(self, model_filename: str):
+        clf = CatBoostClassifier()
+        clf.load_model(model_filename, format=config.DUMP_FORMAT)
+        self.model = clf
+
+    def predict(self, features: DataFrame) -> float:
+        proba = self.model.predict_proba(features)
+
+        return proba[1]

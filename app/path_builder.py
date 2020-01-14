@@ -66,4 +66,4 @@ def get_coordinates_by_description(location_description: str) -> list:
 def get_path_points_between_coordinates(source: list,
                                         destination: list,
                                         number_of_points: int) -> list:
-    pass
+    return []
