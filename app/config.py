@@ -7,3 +7,8 @@ NOMINATIM_SCHEME = 'http'
 # MODEL
 DUMP_FORMAT = 'cbm'
 YEARS = [2015, 2016, 2017, 2018]
+
+# SERVER PATHS
+ETOPO_DS_PATH = '/home/kclo/Notebooks/elevation/ETOPO1_Bed_g_gmt4.grd'
+PRECIPITATION_DS_PATH = '/home/kclo/Notebooks/weather/datasets/precip.%d.nc'
+WEATHER_PATH = '/home/kclo/Notebooks/weather/getncepreanalisys.py'

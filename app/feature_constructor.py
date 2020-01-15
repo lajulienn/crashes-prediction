@@ -1,18 +1,22 @@
 import xarray as xr
 import pickle
 import warnings
+import importlib.util
 from astral import Astral, Location
 from workalendar.europe import Russia
-from weather.getncepreanalisys import point_time_weather
 
 from . import config
+
+spec = importlib.util.spec_from_file_location("getncepreanalisys", config.WEATHER_PATH)
+getncepreanalisys = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(getncepreanalisys)
 
 class FeatureConstructor:
     def __init__(self):
         self.features = None
-        self.etopo = xr.open_dataset('../elevation/ETOPO1_Bed_g_gmt4.grd')
+        self.etopo = xr.open_dataset(config.ETOPO_DS_PATH)
         self.precipitation_ds = xr.merge(
-            map(lambda y: xr.open_dataset('../weather/datasets/precip.%d.nc' % y),
+            map(lambda y: xr.open_dataset(config.PRECIPITATION_DS_PATH % y),
                 config.YEARS
             )
         )
@@ -77,7 +81,7 @@ class FeatureConstructor:
                  'temperature', 'uwind', 'vwind', 'humidity']
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            point = point_time_weather(
+            point = getncepreanalisys.point_time_weather(
                 self.weather_ds,
                 self.features.get('longitude'),
                 self.features.get('longitude'),
