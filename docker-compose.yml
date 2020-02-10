@@ -1,0 +1,8 @@
+version: '3.5'
+services:
+  crashes-prediction:
+    container_name: crashes-prediction
+    build: .
+    ports:
+     - 6060:5000
+    restart: always

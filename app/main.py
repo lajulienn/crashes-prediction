@@ -1,30 +1,53 @@
-from flask import Flask, render_template, request, jsonify
-from .feature_constructor import FeatureConstructor
-from . import config
+import importlib
 from datetime import datetime
-import pickle
+
+from flask import Flask, render_template, jsonify
+
+from . import config
+from .crash_predictor import CrashPredictor
+from .feature_constructor import FeatureConstructor
+from .weather_forecast import forecast
+
+# import module from code
+spec = importlib.util.spec_from_file_location("getncepreanalisys", config.WEATHER_PATH + '/getncepreanalisys.py')
+getncepreanalisys = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(getncepreanalisys)
 
 
 app = Flask(__name__)
-
-feature_constructor = FeatureConstructor()
+featureConstructor = FeatureConstructor()
+crashPredictor = CrashPredictor()
 
 @app.route("/")
 def hello():
     return render_template('main.html')
 
-@app.route("/predict", methods=['POST'])
+@app.route("/predict", methods=['GET'])
 def predict():
-    origin = request.form['origin']
-    destination = request.form['destination']
-    date = request.form['date']
-    time = request.form['time']
+    # date = request.form['date']
+    # time = request.form['time']
+    # origin = request.form['origin']
+    # destination = request.form['destination']
+    # date_time = datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M')
 
-    date_time = datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M')
+    date_time = datetime.now()
+    origin = [44.314566, 38.701589]
+    destination = ['44.344929', '38.706081']
 
-    features = feature_constructor.get_feature_dataframe(origin, destination, date_time)
+    global featureConstructor
+    features_list = featureConstructor.get_features_list(origin[0], origin[1], date_time)
+    res = {
+        'features': features_list,
+        'crash_probability': crashPredictor.predict(features_list)
+    }
 
-    return jsonify(features)
+    return jsonify(res)
+
+@app.route("/weather")
+def weather():
+    res = forecast()
+    return jsonify(res)
+
 
 @app.route("/test")
 def test():
@@ -32,7 +55,7 @@ def test():
     origin = [44.314566, 38.701589]
     destination = ['44.344929', '38.706081']
 
-    features = feature_constructor.get_feature_dataframe(origin[0], origin[1], date_time)
+    features = featureConstructor.get_features_list(origin[0], origin[1], date_time)
     return jsonify(features)
 
 

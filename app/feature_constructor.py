@@ -5,6 +5,8 @@ import warnings
 import importlib.util
 from astral import Location
 from workalendar.europe import Russia
+from siphon.catalog import TDSCatalog
+from datetime import datetime, timedelta
 
 from . import config
 
@@ -25,8 +27,8 @@ class FeatureConstructor:
             )
         )
         self.__timezone = pytz.timezone('Europe/Moscow')
-        # with open(config.WEATHER_PATH + "/w-12-19.pkl", 'rb') as file:
-        #     self.__weather_ds = pickle.load(file)
+        with open("/home/julia/datasets/w-12-19.pkl", 'rb') as file:
+            self.__weather_ds = pickle.load(file)
 
     def __set_year(self):
         self.__features['year'] = self.__features.get('datetime').year
@@ -74,63 +76,65 @@ class FeatureConstructor:
         self.__features['dayofweek'] = date_time.strftime("%A")
         self.__features['month'] = date_time.strftime("%B")
 
-    def __set_precipitation(self):
-        self.__precipitation_ds.sel(
-            lon=self.__features.get('longitude'),
-            lat=self.__features.get('latitude'),
-            time=self.__features.get('datetime'),
-            method='nearest'
-        ).precip.values.item(0)
+    # def __set_precipitation(self):
+    #     self.__precipitation_ds.sel(
+    #         lon=self.__features.get('longitude'),
+    #         lat=self.__features.get('latitude'),
+    #         time=self.__features.get('datetime'),
+    #         method='nearest'
+    #     ).precip.values.item(0)
 
     def __set_weather_data(self):
-        attrs = ['t1w', 't2w', 't3w', 'h1w', 'h2w', 'h3w',
-                 'temperature', 'uwind', 'vwind', 'humidity']
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
-            point = getncepreanalisys.point_time_weather(
-                self.__weather_ds,
-                self.__features.get('longitude'),
-                self.__features.get('longitude'),
-                self.__features.get('datetime').date()
-            )
-            for attr in attrs:
-                self.__features[attr] = point[attr]
+        time = datetime.utcnow() #self.__features.get('datetime')
 
-        attrs = ['10m_u_component_of_wind', '10m_v_component_of_wind', '2m_dewpoint_temperature',
-                 '2m_temperature', 'evaporation_from_bare_soil',
-                 'evaporation_from_open_water_surfaces_excluding_oceans',
-                 'runoff', 'snow_cover', 'snow_depth',
-                 'snowfall', 'snowmelt',
-                 'soil_temperature_level_1', 'surface_pressure', 'surface_runoff',
-                 'total_precipitation', 'volumetric_soil_water_layer_1']
+        forecastvariables = [
+            'Temperature_isobaric',
+            'Relative_humidity_isobaric',
+            'u-component_of_wind_isobaric',
+            'v-component_of_wind_isobaric',
+            'Soil_temperature_depth_below_surface_layer',
+            'Pressure_surface',
+            'Water_runoff_surface_Mixed_intervals_Accumulation',
+            'Total_precipitation_surface_Mixed_intervals_Accumulation',
+            'Volumetric_Soil_Moisture_Content_depth_below_surface_layer',
+        ]
+        gfs_cat = TDSCatalog(config.TDSCATALOG_URL)
+        latest = gfs_cat.latest
+        ncss = latest.subset()
+        query = ncss.query().variables(*forecastvariables)
+        query.time(time).accept('netCDF4')
+        nc = ncss.get_data(query)
+        fds = xr.open_dataset(xr.backends.NetCDF4DataStore(nc))
+        fds = fds.sel(isobaric=100000)
+        fds = fds.rename({
+            'Relative_humidity_isobaric': 'humidity',
+            'Temperature_isobaric': 'temperature',
+            'u-component_of_wind_isobaric': 'uwind',
+            'v-component_of_wind_isobaric': 'vwind',
+            'Soil_temperature_depth_below_surface_layer': 'soil_temperature_level_1',
+            'Pressure_surface': 'surface_pressure',
+            'Water_runoff_surface_Mixed_intervals_Accumulation': 'surface_runoff',
+            'Total_precipitation_surface_Mixed_intervals_Accumulation': 'total_precipitation',
+            'Volumetric_Soil_Moisture_Content_depth_below_surface_layer': 'volumetric_soil_water_layer_1',
+        })
+        try:
+            fds = fds.rename({'time3': 'time'})
+        except:
+            pass
 
-        datasets = {}
-        for attr in attrs:
-            year = self.__features.get('datetime').year
-            try:
-                ds = datasets['%s_%d' % (attr, year)]
-            except:
-                datasets['%s_%d' % (attr, year)] = xr.open_dataset(
-                    './weather/%s_%d.grib' % (attr, year),
-                    engine='cfgrib'
-                )
-                ds = datasets['%s_%d' % (attr, year)]
-            try:
-                value = ds.sel(
-                    longitude=self.__features.get('longitude'),
-                    latitude=self.__features.get('latitude'),
-                    time=self.__features.get('datetime').date(),
-                    step=self.__features.get('datetime') - self.__features.get('datetime').normalize(),
-                    method='nearest'
-                )
-            except:
-                value = ds.sel(
-                    longitude=self.__features.get('longitude'),
-                    latitude=self.__features.get('latitude'),
-                    time=self.__features.get('datetime'),
-                    method='nearest'
-                )
-            self.__features[attr] = value[list(ds.data_vars.keys())[0]].values.item(0)
+        latitude = self.__features.get('latitude')
+        longitude = self.__features.get('longitude')
+        fm = fds.sel(lat=latitude, lon=longitude, time=time, method='nearest')
+
+        self.__features['temperature'] = fm.temperature.values.item(0)
+        self.__features['humidity'] = fm.humidity.values.item(0)
+        self.__features['uwind'] = fm.uwind.values.item(0)
+        self.__features['vwind'] = fm.vwind.values.item(0)
+        self.__features['soil_temperature_level_1'] = fm.soil_temperature_level_1.values.item(0)
+        self.__features['surface_pressure'] = fm.surface_pressure.values.item(0)
+        self.__features['surface_runoff'] = fm.surface_runoff.values.item(0)
+        self.__features['total_precipitation'] = fm.total_precipitation.values.item(0)
+        self.__features['volumetric_soil_water_layer_1'] = fm.volumetric_soil_water_layer_1.values.item(0)
 
     def __set_terrain_data(self):
         attrs = [
@@ -153,7 +157,7 @@ class FeatureConstructor:
                 method='nearest'
             ).values.item(0)
 
-    def get_feature_dataframe(self, latitude, longitude, date_time):
+    def get_features_list(self, latitude, longitude, date_time):
         self.__features = {
             'latitude': latitude,
             'longitude': longitude,
@@ -165,8 +169,9 @@ class FeatureConstructor:
         self.__set_elevation()
         self.__set_sunlight_info()
         self.__set_calendar_info()
-        self.__set_precipitation()
-        # self.__set_weather_data()
+        self.__set_weather_data()
         self.__set_terrain_data()
 
-        return self.__features
+        feature_list = [self.__features.get(feature) for feature in config.FEATURES]
+
+        return feature_list
