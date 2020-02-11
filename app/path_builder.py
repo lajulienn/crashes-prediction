@@ -10,12 +10,15 @@ from . import config
 class GeocodeError(Exception):
     pass
 
+class PathBuildError(Exception):
+    pass
+
 
 class Geocode:
     def __init__(self, location: str):
         self.location_description = location
 
-    def nominatim_(self) -> list:
+    def __nominatim(self) -> list:
         try:
             nominatim = Nominatim(
                 user_agent=config.NOMINATIM_USER_AGENT,
@@ -31,7 +34,7 @@ class Geocode:
 
         return location
 
-    def yandex_(self) -> list:
+    def __yandex(self) -> list:
         try:
             url = f'http://geocode-maps.yandex.ru/1.x/?apikey={config.YANDEX_API_KEY}' \
                   f'&geocode={self.location_description}&results=1&format=json'
@@ -49,9 +52,9 @@ class Geocode:
         return location
 
     def get_coordinates(self):
-        coordinates = self.nominatim_()
+        coordinates = self.__nominatim()
         if not coordinates:
-            coordinates = self.yandex_()
+            coordinates = self.__yandex()
         return coordinates
 
 
@@ -63,7 +66,17 @@ def get_coordinates_by_description(location_description: str) -> list:
     return coordinates
 
 
-def get_path_points_between_coordinates(source: list,
-                                        destination: list,
-                                        number_of_points: int) -> list:
-    return []
+def get_path_points_between_coordinates(origin: list, destination: list) -> list:
+    if len(origin) != 2 or len(destination) != 2:
+        raise PathBuildError('Source and destination should be lists of length 2')
+
+    url = f'https://graphhopper.com/api/1/route?point={origin[0]},{origin[1]}&' \
+          f'point={destination[0]},{destination[1]}&vehicle=car&debug=true&' \
+          f'key={config.GRAPHHOPPER_KEY}&type=json&points_encoded=False&' \
+          f'instructions=False&alternative_route.max_paths=0'
+    response = requests.get(url)
+    response = json.loads(response.text)
+    points = response.get('paths')[0].get('points').get('coordinates')
+    points = [point[::-1] for point in points]
+
+    return points

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Predict</title>
+</head>
+<body>
+<form action="/predict" method="post">
+    <ul>
+        <li>
+            <label for="origin_latitude">Origin latitude:</label>
+            <input type="text" id="origin_latitude" name="origin_latitude">
+        </li>
+        <li>
+            <label for="origin_longitude">Origin longitude:</label>
+            <input type="text" id="origin_longitude" name="origin_longitude">
+        </li>
+
+        <li>
+            <label for="destination_latitude">Destination latitude:</label>
+            <input type="text" id="destination_latitude" name="destination_latitude">
+        </li>
+        <li>
+            <label for="destination_longitude">Destination longitude:</label>
+            <input type="text" id="destination_longitude" name="destination_longitude">
+        </li>
+
+        <li>
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date">
+        </li>
+        <li>
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time">
+        </li>
+    </ul>
+    <dd><input type=submit value=Submit>
+</form>
+</body>
+</html>

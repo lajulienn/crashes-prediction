@@ -3,6 +3,7 @@ YANDEX_API_KEY = '611c97ab-4f96-4575-b166-75878a497f8c'
 NOMINATIM_USER_AGENT = 'datadigger'
 NOMINATIM_DOMAIN = 'datadigger.ru:7070'
 NOMINATIM_SCHEME = 'http'
+GRAPHHOPPER_KEY = 'ba54db28-5e83-424a-a5af-f2c3b58369bf'
 
 # MODEL
 MODEL_FILENAME = '/home/kclo/Notebooks/crashes/small_model_dump'
