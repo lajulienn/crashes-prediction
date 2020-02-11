@@ -1,7 +1,7 @@
 from catboost import CatBoostClassifier
-from pandas import DataFrame
 
 from . import config
+
 
 class CrashPredictor:
     def __init__(self, model_filename: str=config.MODEL_FILENAME):

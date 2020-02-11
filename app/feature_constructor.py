@@ -1,20 +1,13 @@
-import xarray as xr
 import pickle
+from datetime import datetime
+
 import pytz
-import warnings
-import importlib.util
+import xarray as xr
 from astral import Location
-from workalendar.europe import Russia
 from siphon.catalog import TDSCatalog
-from datetime import datetime, timedelta
+from workalendar.europe import Russia
 
 from . import config
-
-# import module from code
-spec = importlib.util.spec_from_file_location("getncepreanalisys",
-                                              config.WEATHER_PATH + '/getncepreanalisys.py')
-getncepreanalisys = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(getncepreanalisys)
 
 
 class FeatureConstructor:
@@ -24,7 +17,7 @@ class FeatureConstructor:
         self.__precipitation_ds = xr.merge(
             map(lambda y: xr.open_dataset(config.PRECIPITATION_DS_PATH % y),
                 config.YEARS
-            )
+                )
         )
         self.__timezone = pytz.timezone('Europe/Moscow')
         with open("/home/julia/datasets/w-12-19.pkl", 'rb') as file:
@@ -72,20 +65,12 @@ class FeatureConstructor:
     def __set_calendar_info(self):
         date_time = self.__features.get('datetime')
 
-        self.__features['isworkingday'] =  Russia().is_working_day(date_time)
+        self.__features['isworkingday'] = Russia().is_working_day(date_time)
         self.__features['dayofweek'] = date_time.strftime("%A")
         self.__features['month'] = date_time.strftime("%B")
 
-    # def __set_precipitation(self):
-    #     self.__precipitation_ds.sel(
-    #         lon=self.__features.get('longitude'),
-    #         lat=self.__features.get('latitude'),
-    #         time=self.__features.get('datetime'),
-    #         method='nearest'
-    #     ).precip.values.item(0)
-
     def __set_weather_data(self):
-        time = datetime.utcnow() #self.__features.get('datetime')
+        time = datetime.utcnow()  # self.__features.get('datetime')
 
         forecastvariables = [
             'Temperature_isobaric',
