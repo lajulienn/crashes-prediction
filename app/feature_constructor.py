@@ -1,5 +1,6 @@
 import pickle
 from datetime import datetime
+from timeit import default_timer as timer
 
 import pytz
 import xarray as xr
@@ -149,13 +150,33 @@ class FeatureConstructor:
             'datetime': date_time.astimezone(self.__timezone),
         }
 
+        # start = timer()
         self.__set_year()
+        # print(f'set_year(): {timer() - start}')
+
+        # start = timer()
         self.__set_hour()
+        # print(f'set_hour(): {timer() - start}')
+
+        # start = timer()
         self.__set_elevation()
+        # print(f'set_elevation(): {timer() - start}')
+
+        # start = timer()
         self.__set_sunlight_info()
+        # print(f'set_sunlight_info(): {timer() - start}')
+
+        # start = timer()
         self.__set_calendar_info()
-        self.__set_weather_data()
+        # print(f'set_calendar_info(): {timer() - start}')
+
+        # start = timer()
+        # self.__set_weather_data()
+        # print(f'set_weather_info(): {timer() - start}')
+
+        # start = timer()
         self.__set_terrain_data()
+        # print(f'set_terrain_info(): {timer() - start}')
 
         feature_list = [self.__features.get(feature) for feature in config.FEATURES]
 

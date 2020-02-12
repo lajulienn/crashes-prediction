@@ -6,7 +6,7 @@ NOMINATIM_SCHEME = 'http'
 GRAPHHOPPER_KEY = 'ba54db28-5e83-424a-a5af-f2c3b58369bf'
 
 # MODEL
-MODEL_FILENAME = '/home/kclo/Notebooks/crashes/small_model_dump'
+MODEL_FILENAME = '/home/kclo/Notebooks/crashes/small_model_no_weather_dump'
 DUMP_FORMAT = 'cbm'
 YEARS = [2015, 2016, 2017, 2018]
 FEATURES = [
@@ -15,10 +15,10 @@ FEATURES = [
     'solar_azimuth',
     'solar_elevation',
     'solar_zenith',
-    'temperature',
-    'uwind',
-    'vwind',
-    'humidity',
+    # 'temperature',
+    # 'uwind',
+    # 'vwind',
+    # 'humidity',
     'slope_riserun',
     'slope_percentage',
     'slope_degrees',
@@ -27,11 +27,11 @@ FEATURES = [
     'curvature',
     'planform_curvature',
     'profile_curvature',
-    'soil_temperature_level_1',
-    'surface_pressure',
-    'surface_runoff',
-    'total_precipitation',
-    'volumetric_soil_water_layer_1',
+    # 'soil_temperature_level_1',
+    # 'surface_pressure',
+    # 'surface_runoff',
+    # 'total_precipitation',
+    # 'volumetric_soil_water_layer_1',
 ]
 
 # SERVER PATHS

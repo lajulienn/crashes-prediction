@@ -1,4 +1,5 @@
 from datetime import datetime
+from timeit import default_timer as timer
 
 from flask import Flask, render_template, jsonify, request
 from tqdm import tqdm
@@ -32,7 +33,9 @@ def predict_form():
 def predict_one():
     global featureConstructor, crashPredictor
     if featureConstructor is None or crashPredictor is None:
+        start = timer()
         init()
+        print(f'init(): {timer() - start}')
 
     latitude = float(request.form['latitude'])
     longitude = float(request.form['longitude'])
@@ -41,9 +44,13 @@ def predict_one():
     date_time = datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M')
 
     features_list = featureConstructor.get_features_list(latitude, longitude, date_time)
+    start = timer()
+    probability = crashPredictor.predict(features_list)
+    print(f'predict(): {timer() - start}')
+
     result = {
         'features': features_list,
-        'crash_probability': crashPredictor.predict(features_list)
+        'crash_probability': probability,
     }
 
     return jsonify(result)
