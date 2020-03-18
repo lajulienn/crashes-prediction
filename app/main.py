@@ -4,9 +4,9 @@ from timeit import default_timer as timer
 from flask import Flask, render_template, jsonify, request
 from tqdm import tqdm
 
-from .crash_predictor import CrashPredictor
-from .feature_constructor import FeatureConstructor
-from .path_builder import get_path_points_between_coordinates
+from crash_predictor import CrashPredictor
+from feature_constructor import FeatureConstructor
+from path_builder import get_path_points_between_coordinates
 
 app = Flask(__name__)
 featureConstructor = None

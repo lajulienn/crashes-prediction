@@ -8,7 +8,7 @@ from astral import Location
 from siphon.catalog import TDSCatalog
 from workalendar.europe import Russia
 
-from . import config
+import config
 
 
 class FeatureConstructor:

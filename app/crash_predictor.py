@@ -1,6 +1,6 @@
 from catboost import CatBoostClassifier
 
-from . import config
+import config
 
 
 class CrashPredictor:

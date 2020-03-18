@@ -4,7 +4,7 @@ import requests
 from geopy.exc import GeopyError
 from geopy.geocoders import Nominatim
 
-from . import config
+import config
 
 
 class GeocodeError(Exception):
