@@ -3,4 +3,5 @@ ADD ./app /code/app
 ADD ./requirements.txt /code/requirements.txt
 WORKDIR /code
 RUN pip install --upgrade pip && pip install -r requirements.txt
+EXPOSE 5000
 CMD ["python", "./app/main.py"]
