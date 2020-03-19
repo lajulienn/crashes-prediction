@@ -2,39 +2,193 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Predict</title>
+    <title>Car crash probability estimator</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            background: #dedede;
+        }
+        form {
+            background: white;
+            border-radius: 18px;
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 18px;
+        }
+        .form-section {
+            display: flex;
+            align-items: baseline;
+        }
+    </style>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
 </head>
 <body>
-<form action="/predict" method="post">
-    <ul>
-        <li>
-            <label for="origin_latitude">Origin latitude:</label>
-            <input type="text" id="origin_latitude" name="origin_latitude">
-        </li>
-        <li>
-            <label for="origin_longitude">Origin longitude:</label>
-            <input type="text" id="origin_longitude" name="origin_longitude">
-        </li>
-
-        <li>
-            <label for="destination_latitude">Destination latitude:</label>
-            <input type="text" id="destination_latitude" name="destination_latitude">
-        </li>
-        <li>
-            <label for="destination_longitude">Destination longitude:</label>
-            <input type="text" id="destination_longitude" name="destination_longitude">
-        </li>
-
-        <li>
-            <label for="date">Date:</label>
-            <input type="date" id="date" name="date">
-        </li>
-        <li>
-            <label for="time">Time:</label>
-            <input type="time" id="time" name="time">
-        </li>
-    </ul>
-    <dd><input type=submit value=Submit>
+<map id="map"></map>
+<form action="javascript:void(0);" method="post" onsubmit="return route()">
+    <div class="form-section">
+        <div class="form-section-label">откуда</div>
+        <div>
+            <input name="origin-coords" value="38.97603, 45.04484" onchange="state.origin=this.value">
+        </div>
+    </div>
+    <div class="form-section">
+        <div class="form-section-label">куда</div>
+        <div>
+            <input name="destination-coords"  value="39.7257, 43.5992" onchange="state.dest=this.value">
+        </div>
+    </div>
+    <div class="form-section">
+        <div class="form-section-label">когда</div>
+        <input type="text" id="time" name="time" value="{{current_time}}" onchange="state.time=this.value">
+    </div>
+    <div class="form-section">
+        <input type=submit value="рассчитать риски на маршруте">
+    </div>
 </form>
+<script>
+    function param(object) {
+        var encodedString = '';
+        for (var prop in object) {
+            if (object.hasOwnProperty(prop)) {
+                if (encodedString.length > 0) {
+                    encodedString += '&';
+                }
+                encodedString += encodeURI(prop + '=' + object[prop]);
+            }
+        }
+        return encodedString;
+    }
+    var state = {
+        _origin: "38.97603, 45.04484",
+        _dest: "39.7257, 43.5992",
+        _time: "{{ current_time }}",
+        get origin() {
+            return this._origin
+        },
+        set origin(value) {
+            this._origin = value;
+        },
+        get destination() {
+            return this._dest
+        },
+        set destination(value) {
+            this._dest = value;
+        },
+        get time() {
+            return this._time
+        },
+        set time(value) {
+            this._time = value;
+        }
+    }
+    const line_particle = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": []
+                }
+            }
+        ]
+    };
+    function route() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'predict');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const points = JSON.parse(xhr.responseText)
+                map.addSource('points', {
+                    'type': 'geojson',
+                    'data': points
+                })
+                map.addLayer({
+                    'id': 'points',
+                    'type': 'circle',
+                    'source': 'points',
+                    'paint': {
+                        'circle-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'probability'],
+                            0,
+                            'green',
+                            0.5,
+                            'yellow',
+                            1,
+                            'red'
+                        ]
+                    }
+                });
+                // for(let i=0; i<points.features.length-1; i++) {
+                //     const coords = i => points.features[i].geometry.coordinates
+                //     const source = Object.assign({}, line_particle)
+                //     source.features[0].geometry.coordinates = [coords(i), coords(i + 1)]
+                //     // console.log('line'+i)
+                //     map.addSource('line'+i, {
+                //         type: 'geojson',
+                //         lineMetrics: true,
+                //         data: source
+                //     })
+                //     const color = i => {
+                //         const probability = points.features[i].properties.probability
+                //         if (probability < 0.33)
+                //             return 'green'
+                //         if (probability < 0.66) 
+                //             return 'yellow'
+                //         return 'red'
+                //     }
+                //     map.addLayer({     
+                //         type: 'line',
+                //         source: 'line'+i,
+                //         id: 'line'+i,
+                //         paint: {
+                //             'line-color': 'blue',
+                //             'line-width': 14,
+                //             'line-gradient': [
+                //                 'interpolate',
+                //                 ['linear'],
+                //                 ['line-progress'],
+                //                 0, color(i),
+                //                 1, color(i+1)
+                //             ]
+                //         },
+                //         layout: {
+                //             'line-cap': 'round',
+                //             'line-join': 'round'
+                //         }
+                //     });
+                // }
+
+            }
+            else if (xhr.status !== 200) {
+                alert('Request failed.  Returned status of ' + xhr.status);
+            }
+        };
+        xhr.send(param(state));
+        return false;
+    }
+    mapboxgl.accessToken = 'pk.eyJ1Ijoia2NsbyIsImEiOiJIRHFNd2JjIn0.NmV_-ut5Q7oSuUTAROYxLA'
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [38.97603, 45.04484],
+        zoom: 9
+    });
+</script>
 </body>
 </html>
