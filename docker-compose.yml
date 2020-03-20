@@ -6,3 +6,5 @@ services:
     ports:
      - 6060:5000
     restart: always
+    volumes:
+      - /home/kclo/Notebooks:/data

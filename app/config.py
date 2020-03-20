@@ -6,7 +6,7 @@ NOMINATIM_SCHEME = 'http'
 GRAPHHOPPER_KEY = 'ba54db28-5e83-424a-a5af-f2c3b58369bf'
 
 # MODEL
-MODEL_FILENAME = '/home/kclo/Notebooks/crashes/small_model_no_weather_dump'
+MODEL_FILENAME = '/data/crashes/small_model_no_weather_dump'
 DUMP_FORMAT = 'cbm'
 YEARS = [2015, 2016, 2017, 2018]
 FEATURES = [
@@ -35,10 +35,10 @@ FEATURES = [
 ]
 
 # SERVER PATHS
-ETOPO_DS_PATH = '/home/kclo/Notebooks/elevation/ETOPO1_Bed_g_gmt4.grd'
-PRECIPITATION_DS_PATH = '/home/kclo/Notebooks/weather/datasets/precip.%d.nc'
-WEATHER_PATH = '/home/kclo/Notebooks/weather'
-CRASHES_PATH = '/home/kclo/Notebooks/crashes'
+ETOPO_DS_PATH = '/data/elevation/ETOPO1_Bed_g_gmt4.grd'
+PRECIPITATION_DS_PATH = '/data/weather/datasets/precip.%d.nc'
+WEATHER_PATH = '/data/weather'
+CRASHES_PATH = '/data/crashes'
 
 # OTHER
 TDSCATALOG_URL = 'http://thredds.ucar.edu/thredds/catalog/grib/NCEP/GFS/Global_0p5deg/catalog.xml'
