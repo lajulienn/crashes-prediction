@@ -1,3 +1,4 @@
+import os
 import pickle
 from datetime import datetime
 from timeit import default_timer as timer
@@ -21,7 +22,7 @@ class FeatureConstructor:
                 )
         )
         self.__timezone = pytz.timezone('Europe/Moscow')
-        with open("/home/julia/datasets/w-12-19.pkl", 'rb') as file:
+        with open(os.path.join(config.WEATHER_PATH, "/w-12-19.pkl"), 'rb') as file:
             self.__weather_ds = pickle.load(file)
 
     def __set_year(self):
