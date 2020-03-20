@@ -6,6 +6,7 @@ from geopy.geocoders import Nominatim
 
 import config
 
+import logging
 
 class GeocodeError(Exception):
     pass
@@ -77,6 +78,6 @@ def get_path_points_between_coordinates(origin: list, destination: list) -> list
     response = requests.get(url)
     response = json.loads(response.text)
     points = response.get('paths')[0].get('points').get('coordinates')
-    points = [point[::-1] for point in points]
+    # points =  [point[::-1] for point in points]
 
     return points

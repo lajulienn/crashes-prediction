@@ -39,13 +39,13 @@
     <div class="form-section">
         <div class="form-section-label">откуда</div>
         <div>
-            <input name="origin-coords" value="38.97603, 45.04484" onchange="state.origin=this.value">
+            <input name="origin-coords" value="45.04484, 38.97603" onchange="state.origin=this.value">
         </div>
     </div>
     <div class="form-section">
         <div class="form-section-label">куда</div>
         <div>
-            <input name="destination-coords"  value="39.7257, 43.5992" onchange="state.dest=this.value">
+            <input name="destination-coords"  value="43.5992, 39.7257" onchange="state.dest=this.value">
         </div>
     </div>
     <div class="form-section">
@@ -70,8 +70,8 @@
         return encodedString;
     }
     var state = {
-        _origin: "38.97603, 45.04484",
-        _dest: "39.7257, 43.5992",
+        _origin: "45.04484, 38.97603",
+        _dest: "43.5992, 39.7257",
         _time: "{{ current_time }}",
         get origin() {
             return this._origin
@@ -107,7 +107,7 @@
     };
     function route() {
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'predict');
+        xhr.open('POST', 'test');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function () {
             if (xhr.status === 200) {
