@@ -22,8 +22,8 @@ class FeatureConstructor:
                 )
         )
         self.__timezone = pytz.timezone('Europe/Moscow')
-        with open(os.path.join(config.WEATHER_PATH, "w-12-19.pkl"), 'rb') as file:
-            self.__weather_ds = pickle.load(file)
+        # with open(os.path.join(config.WEATHER_PATH, "w-12-19.pkl"), 'rb') as file:
+        #     self.__weather_ds = pickle.load(file)
 
     def __set_year(self):
         self.__features['year'] = self.__features.get('datetime').year
