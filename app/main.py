@@ -89,13 +89,11 @@ def predict():
         latitude = point[1]
         features_list = featureConstructor.get_features_list(latitude, longitude, date_time)
         probability = crashPredictor.predict(features_list)
-        result.append({
-            'latitude': latitude,
-            'longitude': longitude,
-            'probability': probability,
-        })
+        result.append(Feature(geometry=Point(point), properties={'probability': probability}))
 
-    return jsonify(result)
+    fc = FeatureCollection(result)
+
+    return geojson.dumps(fc)
 
 
 @app.route("/test", methods=['GET', 'POST'])
