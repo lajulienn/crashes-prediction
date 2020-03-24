@@ -70,19 +70,21 @@
         return encodedString;
     }
     var state = {
-        _origin: "45.04484, 38.97603",
-        _dest: "44.757954, 38.680136",
+        _origin: document.getElementsByName('origin-coords')[0].value,
+        _dest: document.getElementsByName('destination-coords')[0].value,
         _time: "{{ current_time }}",
         get origin() {
             return this._origin
         },
         set origin(value) {
             this._origin = value;
+            document.getElementsByName('origin-coords')[0].value = value
         },
         get destination() {
             return this._dest
         },
         set destination(value) {
+        	document.getElementsByName('destination-coords')[0].value = value
             this._dest = value;
         },
         get time() {
@@ -106,73 +108,76 @@
         ]
     };
     function route() {
+    	map.eachLayer(function (layer) {
+		    map.removeLayer(layer);
+		});
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'predict');
+        xhr.open('POST', 'http://datadigger.ru:6060/predict');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function () {
             if (xhr.status === 200) {
                 const points = JSON.parse(xhr.responseText)
-                map.addSource('points', {
-                    'type': 'geojson',
-                    'data': points
-                })
-                map.addLayer({
-                    'id': 'points',
-                    'type': 'circle',
-                    'source': 'points',
-                    'paint': {
-                        'circle-color': [
-                            'interpolate',
-                            ['linear'],
-                            ['get', 'probability'],
-                            0,
-                            'green',
-                            0.5,
-                            'yellow',
-                            1,
-                            'red'
-                        ]
-                    }
-                });
-                // for(let i=0; i<points.features.length-1; i++) {
-                //     const coords = i => points.features[i].geometry.coordinates
-                //     const source = Object.assign({}, line_particle)
-                //     source.features[0].geometry.coordinates = [coords(i), coords(i + 1)]
-                //     // console.log('line'+i)
-                //     map.addSource('line'+i, {
-                //         type: 'geojson',
-                //         lineMetrics: true,
-                //         data: source
-                //     })
-                //     const color = i => {
-                //         const probability = points.features[i].properties.probability
-                //         if (probability < 0.33)
-                //             return 'green'
-                //         if (probability < 0.66) 
-                //             return 'yellow'
-                //         return 'red'
+                // map.addSource('points', {
+                //     'type': 'geojson',
+                //     'data': points
+                // })
+                // map.addLayer({
+                //     'id': 'points',
+                //     'type': 'circle',
+                //     'source': 'points',
+                //     'paint': {
+                //         'circle-color': [
+                //             'interpolate',
+                //             ['linear'],
+                //             ['get', 'probability'],
+                //             0,
+                //             'green',
+                //             0.5,
+                //             'yellow',
+                //             1,
+                //             'red'
+                //         ]
                 //     }
-                //     map.addLayer({     
-                //         type: 'line',
-                //         source: 'line'+i,
-                //         id: 'line'+i,
-                //         paint: {
-                //             'line-color': 'blue',
-                //             'line-width': 14,
-                //             'line-gradient': [
-                //                 'interpolate',
-                //                 ['linear'],
-                //                 ['line-progress'],
-                //                 0, color(i),
-                //                 1, color(i+1)
-                //             ]
-                //         },
-                //         layout: {
-                //             'line-cap': 'round',
-                //             'line-join': 'round'
-                //         }
-                //     });
-                // }
+                // });
+                for(let i=0; i<points.features.length-1; i++) {
+                    const coords = i => points.features[i].geometry.coordinates
+                    const source = Object.assign({}, line_particle)
+                    source.features[0].geometry.coordinates = [coords(i), coords(i + 1)]
+                    // console.log('line'+i)
+                    map.addSource('line'+i, {
+                        type: 'geojson',
+                        lineMetrics: true,
+                        data: source
+                    })
+                    const color = i => {
+                        const probability = points.features[i].properties.probability
+                        if (probability < 0.33)
+                            return 'green'
+                        if (probability < 0.66) 
+                            return 'yellow'
+                        return 'red'
+                    }
+                    map.addLayer({     
+                        type: 'line',
+                        source: 'line'+i,
+                        id: 'line'+i,
+                        paint: {
+                            'line-color': 'blue',
+                            'line-width': 14,
+                            'line-gradient': [
+                                'interpolate',
+                                ['linear'],
+                                ['line-progress'],
+                                0, color(i),
+                                1, color(i+1)
+                            ]
+                        },
+                        layout: {
+                            'line-cap': 'round',
+                            'line-join': 'round'
+                        }
+                    });
+                }
 
             }
             else if (xhr.status !== 200) {
@@ -189,6 +194,24 @@
         center: [38.97603, 45.04484],
         zoom: 9
     });
+    var origin_marker = new mapboxgl.Marker({
+		draggable: true
+	})
+	.setLngLat(state.origin.split(', ').reverse())
+	.addTo(map);
+	origin_marker.on('dragend', function onDragEnd() {
+		var lngLat = origin_marker.getLngLat();
+		state.origin = [lngLat.lat, lngLat.lng].join(', ')
+	});
+	var dest_marker = new mapboxgl.Marker({
+		draggable: true
+	})
+	.setLngLat(state.destination.split(', ').reverse())
+	.addTo(map);
+	dest_marker.on('dragend', () => {
+		var lngLat = dest_marker.getLngLat();
+		state.destination = [lngLat.lat, lngLat.lng].join(', ')
+	})
 </script>
 </body>
 </html>
