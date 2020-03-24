@@ -17,19 +17,19 @@ http://datadigger.ru:6060/predict_form
 
 ```json
 [
-    'isworkingday',
-    'elevation',
-    'solar_azimuth',
-    'solar_elevation',
-    'solar_zenith',
-    'slope_riserun',
-    'slope_percentage',
-    'slope_degrees',
-    'slope_radians',
-    'aspect',
-    'curvature',
-    'planform_curvature',
-    'profile_curvature',
+    "isworkingday",
+    "elevation",
+    "solar_azimuth",
+    "solar_elevation",
+    "solar_zenith",
+    "slope_riserun",
+    "slope_percentage",
+    "slope_degrees",
+    "slope_radians",
+    "aspect",
+    "curvature",
+    "planform_curvature",
+    "profile_curvature",
 ]
 ```
 
