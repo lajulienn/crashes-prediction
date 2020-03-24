@@ -33,6 +33,8 @@ http://datadigger.ru:6060/predict_form
 ]
 ```
 
+Фичи `"elevation", "aspect", "curvature", "planform_curvature", "profile_curvature"` рассчитываются на основе цифровой модели рельефа [ETOPO1](https://www.ngdc.noaa.gov/mgg/global) с разрешением в 1 угловую минуту на пиксел.
+
 Для каждой точки вызывается predict_proba() заранее обученной модели 
 классификации `CatBoostClassifier`, которая выдает вероятность аварии 
 в заданное время.
